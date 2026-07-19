@@ -1,60 +1,53 @@
-using System.Collections;
 using UnityEngine;
+using System.Collections;
 
 public class DoorInteract_TuanAnh : MonoBehaviour
 {
-    [Header("Cài đặt Cửa")]
-    [SerializeField] float openAngle = 90f;
-    [SerializeField] float openSpeed = 2f;
-    [SerializeField] bool isOpen = false;
+    [Header("Góc xoay cửa")]
+    [SerializeField] private float openAngle = 90f;      // cửa mở bao nhiêu độ
+    [SerializeField] private float openSpeed = 2f;        // tốc độ mở/đóng
+    [SerializeField] private bool isLocked = false;        // dùng cho cửa cần chìa khóa/mật mã trước
 
-    [Header("Liên kết cửa đôi (Bỏ trống nếu là cửa đơn)")]
-    [SerializeField] DoorInteract_TuanAnh linkedDoor; // Kéo cánh cửa còn lại vào đây
+    private bool isOpen = false;
+    private Quaternion closedRotation;
+    private Quaternion openRotation;
+    private Coroutine rotateCoroutine;
 
-    private Quaternion _closedRotation;
-    private Quaternion _openRotation;
-    private Coroutine _currentCoroutine;
-
-    void Start()
+    private void Awake()
     {
-        _closedRotation = transform.localRotation;
-        _openRotation = _closedRotation * Quaternion.Euler(0, openAngle, 0);
+        closedRotation = transform.rotation;
+        // Xoay quanh trục Y, đổi sang trục khác nếu bản lề cửa không nằm dọc Y
+        openRotation = closedRotation * Quaternion.Euler(0f, openAngle, 0f);
     }
 
-    // Player gọi hàm này khi bấm E vào cánh cửa này
-    public void Interact()
+    // Gọi hàm này từ script tương tác của player (raycast + phím E)
+    public void ToggleDoor()
     {
-        // 1. Mở cánh cửa hiện tại (cánh bị Raycast bắn trúng)
-        ToggleSingleDoor();
-
-        // 2. Mở cánh cửa được liên kết (nếu có)
-        if (linkedDoor != null)
+        if (isLocked)
         {
-            linkedDoor.ToggleSingleDoor();
+            Debug.Log("Cửa đang khóa, cần chìa khóa hoặc mật mã trước.");
+            return;
         }
-    }
 
-    // Hàm này chỉ thực hiện mở 1 cánh (tách riêng để không bị lặp vô tận khi 2 cửa gọi nhau)
-    public void ToggleSingleDoor()
-    {
-        if (_currentCoroutine != null) StopCoroutine(_currentCoroutine);
-        _currentCoroutine = StartCoroutine(ToggleDoorCoroutine());
-    }
-
-    private IEnumerator ToggleDoorCoroutine()
-    {
-        Quaternion targetRotation = isOpen ? _closedRotation : _openRotation;
-        Quaternion startRotation = transform.localRotation;
         isOpen = !isOpen;
 
-        float time = 0f;
-        while (time < 1f)
+        if (rotateCoroutine != null) StopCoroutine(rotateCoroutine);
+        rotateCoroutine = StartCoroutine(RotateDoor(isOpen ? openRotation : closedRotation));
+    }
+
+    private IEnumerator RotateDoor(Quaternion targetRotation)
+    {
+        while (Quaternion.Angle(transform.rotation, targetRotation) > 0.5f)
         {
-            time += Time.deltaTime * openSpeed;
-            transform.localRotation = Quaternion.Slerp(startRotation, targetRotation, time);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * openSpeed);
             yield return null;
         }
-        
-        transform.localRotation = targetRotation;
+        transform.rotation = targetRotation;
+    }
+
+    // Gọi hàm này khi player nhặt được chìa khóa / giải xong puzzle
+    public void Unlock()
+    {
+        isLocked = false;
     }
 }
