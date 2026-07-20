@@ -1,20 +1,13 @@
 using UnityEngine;
-using UnityEngine.UI;
+using TMPro;
 
 public class KeypadDoor_TuanAnh : MonoBehaviour
 {
-    [Header("Mật mã đúng")]
     [SerializeField] private string correctCode = "4312";
-
-    [Header("Cửa cần mở khi nhập đúng")]
     [SerializeField] private DoorInteract_TuanAnh targetDoor;
-
-    [Header("UI Keypad (tắt/bật khi player tương tác)")]
-    [SerializeField] private GameObject keypadPanel; // Panel UI chứa các nút số
-    [SerializeField] private Text displayText;         // Hiển thị số đang nhập
-    [SerializeField] private Text feedbackText;         // Hiển thị "Sai mã" khi nhập sai
-
-    [Header("Tương tác mở bảng nhập")]
+    [SerializeField] private GameObject keypadPanel;
+    [SerializeField] private TextMeshProUGUI displayText;
+    [SerializeField] private TextMeshProUGUI feedbackText;
     [SerializeField] private Transform player;
     [SerializeField] private float interactRange = 2.5f;
 
@@ -23,10 +16,7 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
 
     void Start()
     {
-        if (player == null && Camera.main != null)
-        {
-            player = Camera.main.transform;
-        }
+        if (player == null && Camera.main != null) player = Camera.main.transform;
         if (keypadPanel != null) keypadPanel.SetActive(false);
     }
 
@@ -35,16 +25,9 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
         if (!isPanelOpen && Input.GetKeyDown(KeyCode.E))
         {
             float distance = Vector3.Distance(transform.position, player.position);
-            if (distance <= interactRange)
-            {
-                OpenKeypad();
-            }
+            if (distance <= interactRange) OpenKeypad();
         }
-
-        if (isPanelOpen && Input.GetKeyDown(KeyCode.Escape))
-        {
-            CloseKeypad();
-        }
+        if (isPanelOpen && Input.GetKeyDown(KeyCode.Escape)) CloseKeypad();
     }
 
     private void OpenKeypad()
@@ -53,7 +36,7 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
         currentInput = "";
         UpdateDisplay();
         if (keypadPanel != null) keypadPanel.SetActive(true);
-        Cursor.lockState = CursorLockMode.None; // mở khóa chuột để bấm UI
+        Cursor.lockState = CursorLockMode.None;
     }
 
     private void CloseKeypad()
@@ -63,20 +46,14 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-    // Gọi hàm này từ OnClick() của từng nút số 0-9 trên UI
     public void PressNumber(string number)
     {
-        if (currentInput.Length >= 4) return; // giới hạn 4 số
+        if (currentInput.Length >= 4) return;
         currentInput += number;
         UpdateDisplay();
-
-        if (currentInput.Length == 4)
-        {
-            CheckCode();
-        }
+        if (currentInput.Length == 4) CheckCode();
     }
 
-    // Gọi từ nút Xóa trên UI
     public void ClearInput()
     {
         currentInput = "";
@@ -94,11 +71,7 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
         if (currentInput == correctCode)
         {
             if (feedbackText != null) feedbackText.text = "Đúng!";
-            if (targetDoor != null)
-            {
-                targetDoor.Unlock();
-                targetDoor.ToggleDoor();
-            }
+            if (targetDoor != null) { targetDoor.Unlock(); targetDoor.ToggleDoor(); }
             Invoke(nameof(CloseKeypad), 0.8f);
         }
         else
