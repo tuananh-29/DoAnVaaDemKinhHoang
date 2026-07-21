@@ -4,7 +4,7 @@ using TMPro;
 public class KeypadDoor_TuanAnh : MonoBehaviour
 {
     [SerializeField] private string correctCode = "4312";
-    [SerializeField] private DoorInteract_TuanAnh targetDoor;
+    [SerializeField] private SlidingGate_TuanAnh targetGate;
     [SerializeField] private GameObject keypadPanel;
     [SerializeField] private TextMeshProUGUI displayText;
     [SerializeField] private TextMeshProUGUI feedbackText;
@@ -71,7 +71,11 @@ public class KeypadDoor_TuanAnh : MonoBehaviour
         if (currentInput == correctCode)
         {
             if (feedbackText != null) feedbackText.text = "Đúng!";
-            if (targetDoor != null) { targetDoor.Unlock(); targetDoor.ToggleDoor(); }
+            if (targetGate != null)
+            {
+                targetGate.Unlock();
+                targetGate.ToggleGate();
+            }
             Invoke(nameof(CloseKeypad), 0.8f);
         }
         else
